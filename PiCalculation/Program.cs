@@ -15,11 +15,15 @@ namespace PiCalculation
             MainAppLoop();
         }
 
-            //Create a function which takes an x, y coordinate struct and returns a double 
-            // corresponding to the hypotenuse of a triangle with sides of lengths x, y.
-            //Func<XYCoord, double> hypotenuse = n => Math.Sqrt(Math.Pow(n.x, 2) + Math.Pow(n.y, 2));
+        //Create a function which takes an x, y coordinate struct and returns a double 
+        // corresponding to the hypotenuse of a triangle with sides of lengths x, y.
+        //Func<XYCoord, double> hypotenuse = n => Math.Sqrt(Math.Pow(n.x, 2) + Math.Pow(n.y, 2));
         public static double hypotenuse(XYCoord n) => Math.Sqrt(Math.Pow(n.x, 2) + Math.Pow(n.y, 2));
 
+        //Since we are using a unit circle where r^2=1, we dont actually need to take the square root
+        //when comparing hypotenuse and 1. As long as hypotenuseSquare < 1 the point is inside unit
+        //circle.
+        public static double hypotenuseSquare(XYCoord n) => n.x*n.x + n.y*n.y;
         private static void MainAppLoop()
         {
             bool End = false;
@@ -90,7 +94,7 @@ namespace PiCalculation
                         long inside = 0;
                         for (long i=0; i<n; ++i)
                         {
-                            if (hypotenuse(new XYCoord(rnd)) < 1) inside++;
+                            if (hypotenuseSquare(new XYCoord(rnd)) < 1) inside++;
                             yield return inside;
                         }
                     }
@@ -118,7 +122,7 @@ namespace PiCalculation
                             //Console.WriteLine(enumerator.Current);
                            Console.WriteLine($"Estimated Pi Value: {estimatePi}\n" +
                                              $"Actual Pi Value:    {Math.PI}\n" +
-                                             $"Difference:         {Math.Abs(estimatePi - Math.PI)}\n" +
+                                             $"Difference:         {Math.Abs(estimatePi - (decimal)Math.PI)}\n" +
                                              $"Elasped time:       {stopwatch.Elapsed.TotalMinutes} Minutes\n" +
                                              $"Points Generated:   {enumerator.Current.Item2}\n" +
                                              $"================================================================");
