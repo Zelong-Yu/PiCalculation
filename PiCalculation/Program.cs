@@ -114,12 +114,12 @@ namespace PiCalculation
                         tempcount++;
                         if (tempcount==step)
                         {
-                           double estimatePi = (double)enumerator.Current.Item1 / enumerator.Current.Item2 *4;
+                           decimal estimatePi = (decimal)enumerator.Current.Item1 / enumerator.Current.Item2 *4;
                             //Console.WriteLine(enumerator.Current);
                            Console.WriteLine($"Estimated Pi Value: {estimatePi}\n" +
                                              $"Actual Pi Value:    {Math.PI}\n" +
                                              $"Difference:         {Math.Abs(estimatePi - Math.PI)}\n" +
-                                             $"Elasped time:       {stopwatch.Elapsed.TotalSeconds} seconds\n" +
+                                             $"Elasped time:       {stopwatch.Elapsed.TotalMinutes} Minutes\n" +
                                              $"Points Generated:   {enumerator.Current.Item2}\n" +
                                              $"================================================================");
                            tempcount = 0;
