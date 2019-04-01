@@ -22,16 +22,17 @@ namespace PiCalculation
 
         //Since we are using a unit circle where r^2=1, we dont actually need to take the square root
         //when comparing hypotenuse and 1. As long as hypotenuseSquare < 1 the point is inside unit
-        //circle.
-        public static double hypotenuseSquare(XYCoord n) => n.x*n.x + n.y*n.y;
+        //circle. This will help pretaining precision to 1E-6
+        public static decimal hypotenuseSquare(XYCoordDecimal n) => n.x*n.x + n.y*n.y;
+        public static double hypotenuseSquare(XYCoord n) => n.x * n.x + n.y * n.y;
         private static void MainAppLoop()
         {
             bool End = false;
             List<string> calculationMethods = new List<string>();
-            calculationMethods.Add("Naïve approach (O(N) time, O(N) space: Array N created and iterated)");
-            calculationMethods.Add("Space improved (O(N) time, O(1) space)");
-            calculationMethods.Add("Recursion approach (O(N) time, O(N) space, stackoverflow)");
-            calculationMethods.Add("IEnumerable approach (O(N) time, O(1) space)");
+            calculationMethods.Add("Original Approach with Array (O(N) time, O(N) space: Array N created and iterated)");
+            calculationMethods.Add("Constant Space Approach with Enumerable.Range, Aggregate (O(N) time, O(1) space)");
+            calculationMethods.Add("Recursion approach (O(N) time, O(N) space, easy stackoverflow)");
+            calculationMethods.Add("Can run-forever approach with IEnumerable yield return (O(N) time, O(1) space)");
             do
             {
                 Console.Clear();
@@ -77,35 +78,23 @@ namespace PiCalculation
         {
             do
             {
-                //takes one int parameter from the command line and creates an array of that 
-                //length containing randomly initialized coordinates.
-                Console.Write("Enter how many points per step to print:  \n>");
-                //long numPoints = long.Parse(Console.ReadLine());
-                int step = int.Parse(Console.ReadLine());
+                int step = UI.AcceptValidInt("Enter how many points per step to print: (0 to quit) \n>", 0);
+                if (step == 0) break;
+
                 // Create new stopwatch.
                 Stopwatch stopwatch = new Stopwatch();
                 try
                 {
                     Random rnd = new Random();
                     stopwatch.Start();
-
-                    IEnumerable<long> GenerateInsideCount(long n)
-                    {
-                        long inside = 0;
-                        for (long i=0; i<n; ++i)
-                        {
-                            if (hypotenuseSquare(new XYCoord(rnd)) < 1) inside++;
-                            yield return inside;
-                        }
-                    }
-
+                  
                     IEnumerable<(long,long)> GenerateInsideCountAndTotal()
                     {
                         long inside = 0;
                         long total = 0;
                         while (true)
                         {
-                            if (hypotenuse(new XYCoord(rnd)) < 1) inside++;
+                            if (hypotenuseSquare(new XYCoord(rnd)) < 1) inside++;
                             total++;
                             yield return (inside,total);
                         }
@@ -129,17 +118,6 @@ namespace PiCalculation
                            tempcount = 0;
                         }
                     }
-                    //double ratio = GenerateInsideCount(numPoints).Last() / (double)numPoints;
-                   
-                    /*double estimatePi = ratio * 4;
-
-                    //stop the timer
-                    stopwatch.Stop();
-
-                    Console.WriteLine($"Estimated Pi Value: {estimatePi}\n" +
-                                      $"Actual Pi Value:    {Math.PI}\n" +
-                                      $"Difference:         {Math.Abs(estimatePi - Math.PI)}\n" +
-                                      $"Elasped time:       {stopwatch.Elapsed.TotalMilliseconds} ms");*/
                 }
                 catch (OutOfMemoryException e)
                 {
@@ -242,7 +220,6 @@ namespace PiCalculation
                     Random rnd = new Random();
                     stopwatch.Start();
 
-                    //BigInteger bigIntFromInt64 = new BigInteger(934157136952);
 
                     double CountOverLap(int k) => Enumerable.Range(1, k).Aggregate(
                                     seed: 0,
@@ -252,14 +229,8 @@ namespace PiCalculation
                       double PointsInCircle = CountOverLap(numPoints);
 
                      double estimatedPi = PointsInCircle / numPoints * 4.0;
+
                     //stop the timer
-
-
-                    //Console.WriteLine($"Estimated Pi Value: {estimatedPi}\n" +
-                    //                  $"Actual Pi Value:    {Math.PI}\n" +
-                    //                  $"Difference:         {Math.Abs(estimatedPi - Math.PI)}\n" +
-                    //                  $"Elasped time:       {stopwatch.Elapsed.TotalMilliseconds} ");
-
                     Console.WriteLine($"Estimated Pi Value: {estimatedPi}\n" +
                                       $"Actual Pi Value:    {Math.PI}");
                     stopwatch.Stop();

@@ -26,6 +26,7 @@ namespace PiCalculation
             this.y = r.NextDouble();
         }
 
+
         public XYCoord((double x, double y) t) : this(t.x, t.y) { }
 
         public void Deconstruct(out double x, out double y)
@@ -34,6 +35,25 @@ namespace PiCalculation
             y = this.y;
         }
         
+    }
+
+    struct XYCoordDecimal
+    {
+        public decimal x;
+        public decimal y;
+
+        public XYCoordDecimal(decimal x, decimal y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+
+        public XYCoordDecimal(Random r)
+        {
+            this.x = (decimal)r.NextDouble();
+            this.y = (decimal)r.NextDouble();
+        }
+
     }
 
 }
