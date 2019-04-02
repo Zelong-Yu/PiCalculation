@@ -49,6 +49,46 @@ namespace PiCalculation
             return value;
         }
 
+        public static long AcceptValidLong(string prompt,
+                                          long minValue = long.MinValue,
+                                          long maxValue = long.MaxValue)
+        {
+            long value = 0;
+            var validInput = false;
+
+            do
+            {
+                Console.Write(prompt);
+
+                var input = Console.ReadLine();
+
+                try
+                {
+                    value = long.Parse(input);
+
+                    if ((value >= minValue) && (value <= maxValue))
+                    {
+                        validInput = true;
+                    }
+                    else
+                    {
+                        throw new ArgumentOutOfRangeException();
+                    }
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine("Invalid input.\n");
+                }
+                catch (ArgumentOutOfRangeException ex)
+                {
+                    Console.WriteLine($"{input} is not a valid value.");
+                    Console.WriteLine($"Valid range is ({minValue}, {maxValue})\n");
+                }
+            } while (!validInput);
+
+            return value;
+        }
+
         public static int SelectionMenu(List<string> optionslist, string title = "Options (Q to quit): ", string bottomprompt="")
         {
             var done = false;
