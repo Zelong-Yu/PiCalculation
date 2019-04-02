@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Extreme.Mathematics;
+using Extreme.Mathematics.Random;
 
 namespace PiCalculation
 {
@@ -24,6 +26,14 @@ namespace PiCalculation
         {
             this.x = r.NextDouble();
             this.y = r.NextDouble();
+        }
+
+        public XYCoord(IEnumerator<Vector<double>> Enumerator)
+        {
+            //takes a 2D vector Enumerator and populate it 
+            Enumerator.MoveNext();
+            this.x = Enumerator.Current[0];
+            this.y = Enumerator.Current[1];
         }
 
 

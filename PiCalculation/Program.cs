@@ -6,15 +6,19 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Numerics;
 using System.Timers;
+using Extreme.Mathematics.Random;
+using System.Collections.Concurrent;
 
 namespace PiCalculation
 {
     class Program
     {
         static void Main(string[] args)
-        {
+        {          
             MainAppLoop();
         }
+
+        
 
         //Create a function which takes an x, y coordinate struct and returns a double 
         // corresponding to the hypotenuse of a triangle with sides of lengths x, y.
@@ -26,18 +30,18 @@ namespace PiCalculation
         //circle. This will help pretaining precision to 1E-6
         public static decimal hypotenuseSquare(XYCoordDecimal n) => n.x*n.x + n.y*n.y;
         public static double hypotenuseSquare(XYCoord n) => n.x * n.x + n.y * n.y;
-        //Timer for use in Parallel approach
-        private static System.Timers.Timer aTimer;
         private static void MainAppLoop()
         {
             bool End = false;
             List<string> calculationMethods = new List<string>();
-            calculationMethods.Add("1. Original Approach with Array (O(N) time, O(N) space: Array N created and iterated)");
+            calculationMethods.Add("1. Original Approach (O(N) time, O(N) space, O(N^-0.5) convergence rate: Array size N created and iterated)");
             calculationMethods.Add("2. Constant Space Approach with Enumerable.Range, Aggregate (O(N) time, O(1) space)");
-            calculationMethods.Add("3. Recursion approach (O(N) time, O(N) space, easy stackoverflow)");
-            calculationMethods.Add("4. Run-forever approach with IEnumerable yield return (O(N) time, O(1) space)");
-            calculationMethods.Add("4a.Run-forever approach with user set start point from previous result");
-            calculationMethods.Add("5. Parallel Approach (O(N) time, O(1) space)");
+            calculationMethods.Add("3. Recursion Approach (O(N) time, O(N) space, easy stackoverflow)");
+            calculationMethods.Add("4. Run-forever Approach with IEnumerable yield return (O(N) time, O(1) space)");
+            calculationMethods.Add("4a.Run-forever Approach with user set start point from previous result");
+            calculationMethods.Add("5. Parallel Approach (~1/4 time needed on 4 core machine, O(1) times number of threads space)");
+            calculationMethods.Add("6. Low Discrepancy Sequence Approach (O(N) time, O(N) space, O(N^-1) convergence rate, O(1) space)");
+            calculationMethods.Add("7. Parallel Low Discrepancy Sequence Approach ");
             do
             {
                 Console.Clear();
@@ -82,11 +86,96 @@ namespace PiCalculation
                     ParallelApproach();
                     return false;
                     break;
+                case 6:
+                    Console.Clear();
+                    LowDiscrepancySequenceApproach();
+                    return false;
+                    break;
+                case 7:
+                    Console.Clear();
+                    LowDiscrepancySequenceParallelApproach();
+                    return false;
+                    break;
                 default:
                     return false;
                     break;
             }
 
+        }
+
+        private static void LowDiscrepancySequenceParallelApproach()
+        {
+            do
+            {
+                int length = UI.AcceptValidInt("Enter how many points to generate: (0 to quit, max 2147483637) \n>", 0, int.MaxValue - 10);
+                if (length == 0) break;
+
+                int inside = 0;
+                int total = 0;
+                object lockObject = new object();
+                //Constructing SobolSequenceGenerator object of size length.
+                var sobol = new SobolSequenceGenerator(2, length);
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+                //uses the Partitioner class to partition the total range into tuples of start and end points and runs the calculation in parallel over the partitions:
+                Parallel.ForEach(Partitioner.Create(0, length), r =>
+                {
+                    int localInside = 0;
+                    int localTotal = 0; 
+                    foreach (var v in sobol.Generate(r.Item2 - r.Item1, r.Item1))
+                    {
+                        if (hypotenuseSquare(new XYCoord(v[0], v[1])) < 1) localInside++;
+                        localTotal++;
+                    }
+                    lock (lockObject)
+                    {
+                        inside += localInside;
+                        total += localTotal;
+                        Console.WriteLine($"{inside}, {total}, {(double)inside / total * 4}             Elasped time:{stopwatch.Elapsed.TotalSeconds} Seconds");
+                    }
+
+                });
+                decimal estimatePi = (decimal)inside / total * 4;
+                Console.WriteLine($"================================================================\n" +
+                                                     $"Estimated Pi Value:  {estimatePi:f14}\n" +
+                                                     $"Actual Pi Value:     {Math.PI}\n" +
+                                                     $"Difference:          {Math.Abs(estimatePi - (decimal)Math.PI):f14}\n" +
+                                                     $"Elasped time:        {stopwatch.Elapsed.TotalSeconds} Seconds\n" +
+                                                     $"Inside Pts Generated:{inside}\n" +
+                                                     $"Total  Pts Generated:{total}\n" +
+                                                     $"================================================================\n");
+            } while (true);
+        }
+
+        private static void LowDiscrepancySequenceApproach()
+        {
+            do
+            {
+                int length = UI.AcceptValidInt("Enter how many points to generate: (0 to quit, max 2147483637) \n>", 0, int.MaxValue-10);
+                if (length == 0) break;
+                int eachstep = UI.AcceptValidInt("Enter how many points per step to print (Put bigger steps >10000000 to avoid screen flash): (0 to quit) \n>", 0, int.MaxValue - 50);
+                if (eachstep == 0) break;
+         
+                int inside = 0;
+                int total = 0;
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+                foreach (var v in QuasiRandom.SobolSequence(2, length))
+                {
+                    if (hypotenuseSquare(new XYCoord(v[0], v[1])) < 1) inside++;
+                    total++;
+                    if (total % eachstep == 0) Console.WriteLine($"{inside}, {total}, {(double)inside / total * 4}             Elasped time:{stopwatch.Elapsed.TotalSeconds} Seconds");
+                }
+                decimal estimatePi = (decimal)inside / total * 4;
+                Console.WriteLine(                   $"================================================================\n"+
+                                                     $"Estimated Pi Value:  {estimatePi:f14}\n" +
+                                                     $"Actual Pi Value:     {Math.PI}\n" +
+                                                     $"Difference:          {Math.Abs(estimatePi - (decimal)Math.PI):f14}\n" +
+                                                     $"Elasped time:        {stopwatch.Elapsed.TotalSeconds} Seconds\n" +
+                                                     $"Inside Pts Generated:{inside}\n" +
+                                                     $"Total  Pts Generated:{total}\n" +
+                                                     $"================================================================\n");
+            } while (true);
         }
 
         private static void ParallelApproach()
