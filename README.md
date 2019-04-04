@@ -3,6 +3,8 @@
 
 A great deal of optimization is done along the way from original array-generating approach, to constant point generating, to parallel running threads, to low discrepancy sequence input in replace of `System.Random`. 
 
+![Alt text](SupportingDocsAndPics/ParallelSobolSequence.gif?raw=true "Parallel Running Low discrepancy sequence Approach")
+
 Original Approach Output - Need O(N) space for a N element array. Limit of number of points generated is memory. 
 _________________________
 |N        |  Estimate Pi | Diff    | Run Time(ms)|
@@ -33,6 +35,7 @@ _________________________
 |N        |  Estimate Pi | Diff    | Run Time(Minutes)|
 |---------|--------------| -----   | ----|
 |586000000000(5.86E11)|3.14159241105802|2.42E-07|617.58|
+
 ![Alt text](SupportingDocsAndPics/EnumerableApproach_10Hr.jpg?raw=true "IEnumerable Approach After 10 hours run")
 
 With `Parrallel.ForEach` method the runtime can be cut to 1/4 on my 4-core I5 Surface Pro.
@@ -43,7 +46,7 @@ _________________________
 |---------|--------------| -----   | ----|
 |2147483637|3.14159279808287|1.44E-07|26.26|
 
-![Alt text](SupportingDocsAndPics/ParallelSobolSequence.gif?raw=true "Parallel Running Low discrepancy sequence Approach")
+![Alt text](SupportingDocsAndPics/ParallelSobolSequence.jpg?raw=true "Parallel Running Low discrepancy sequence Approach")
 
 Another important constant time optimization is the realization that we only need to judge if hypotenuse `Squared` is <1 to tell if a point is in unit circle. There is no need to take square root before comparision since unit circle radius 1 squared is still 1. This saves about 1/4 of run time. 
 
