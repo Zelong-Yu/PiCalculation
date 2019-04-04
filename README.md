@@ -1,4 +1,4 @@
-﻿## Exercise - Value Types and Arrays- Monte Carlo Method
+﻿## Exercise - Monte Carlo Method
 ### Zelong Yu
 
 A great deal of optimization is done along the way from original array-generating approach, to constant point generating, to parallel running threads, to low discrepancy sequence input in replace of `System.Random`. 
